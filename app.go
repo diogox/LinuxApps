@@ -15,7 +15,7 @@ func GetApps() []*AppInfo {
 	for _, file := range desktopFiles {
 		appInfo, err := decodeDesktopFile(file)
 		if err != nil {
-			panic(err)
+			continue
 		}
 		appsMap[appInfo.ExecName] = appInfo
 	}
@@ -23,7 +23,7 @@ func GetApps() []*AppInfo {
 	for _, file := range desktopOverrideFiles {
 		appInfo, err := decodeDesktopFile(file)
 		if err != nil {
-			panic(err)
+			continue
 		}
 		appsMap[appInfo.ExecName] = appInfo
 	}
