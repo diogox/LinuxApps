@@ -71,7 +71,7 @@ func (aw *AppWatcher) Start() error {
 					}
 					if strings.Contains(event.Name, overridePath) {
 						// Check that the file is not overriding any other
-						if _, err := os.Stat(DesktopFilesPath + fileName); !os.IsExist(err) {
+						if _, err := os.Stat(DesktopFilesPath + fileName); os.IsNotExist(err) {
 							aw.OnRemove()
 							continue
 						}
