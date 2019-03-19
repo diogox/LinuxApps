@@ -24,7 +24,9 @@ func GetApps() []*AppInfo {
 		if err != nil {
 			continue
 		}
-		appsMap[appInfo.ExecName] = appInfo
+		if appsMap[appInfo.ExecName] == nil {
+			appsMap[appInfo.ExecName] = appInfo
+		}
 	}
 
 	for _, file := range desktopOverrideFiles {
