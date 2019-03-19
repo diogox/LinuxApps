@@ -30,12 +30,12 @@ func decodeDesktopFile(filepath string) (*AppInfo, error) {
 	if err == nil {
 		// Get name
 		nameKey := entry.Key(fmt.Sprintf("Name[%s]", userLanguage))
-		if nameKey != nil {
+		if nameKey != nil && nameKey.Value() != "" {
 			name = nameKey.Value()
 		}
 		// Get description
 		descriptionKey := entry.Key(fmt.Sprintf("Comment[%s]", userLanguage))
-		if descriptionKey != nil {
+		if descriptionKey != nil && descriptionKey.Value() != "" {
 			description = descriptionKey.Value()
 		}
 	}

@@ -8,8 +8,15 @@ type AppInfo struct {
 }
 
 func GetApps() []*AppInfo {
+	desktopFilesPaths := getEnvPaths()
+
+	// Get all desktop, visible, files
 	desktopFiles := getDesktopFiles(DesktopFilesPath)
-	desktopOverrideFiles := getDesktopFiles(DesktopFilesPath)
+	for _, path := range desktopFilesPaths {
+		desktopFiles = append(desktopFiles, getDesktopFiles(path)...)
+	}
+
+	desktopOverrideFiles := getDesktopFiles(DesktopFilesOverridePath)
 
 	appsMap := make(map[string]*AppInfo, 0)
 	for _, file := range desktopFiles {

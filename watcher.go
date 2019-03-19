@@ -2,8 +2,8 @@ package LinuxApps
 
 import (
 	"github.com/fsnotify/fsnotify"
-	"github.com/mitchellh/go-homedir"
 	"os"
+	"path"
 	"strings"
 )
 
@@ -32,15 +32,9 @@ func (aw *AppWatcher) Start() error {
 		panic(err)
 	}
 
-	// os.Stat doesn't seem to work very well with paths starting in "~"
-	overridePath, err := homedir.Expand(DesktopFilesOverridePath)
-	if err != nil {
-		panic(err)
-	}
-
 	// Watch override file, only if it exists
-	if _, err := os.Stat(overridePath); !os.IsNotExist(err) {
-		err = watcher.Add(overridePath)
+	if _, err := os.Stat(DesktopFilesOverridePath); !os.IsNotExist(err) {
+		err = watcher.Add(DesktopFilesOverridePath)
 		if err != nil {
 			panic(err)
 		}
@@ -65,11 +59,7 @@ func (aw *AppWatcher) Start() error {
 					filePathComponents := strings.Split(event.Name, "/")
 					fileName := filePathComponents[len(filePathComponents) - 1]
 
-					overridePath, err := homedir.Expand(DesktopFilesOverridePath)
-					if err != nil {
-						panic(err)
-					}
-					if strings.Contains(event.Name, overridePath) {
+					if strings.Contains(event.Name, DesktopFilesOverridePath) {
 						// Check that the file is not overriding any other
 						if _, err := os.Stat(DesktopFilesPath + fileName); os.IsNotExist(err) {
 							aw.OnRemove()
@@ -97,19 +87,13 @@ func (aw *AppWatcher) Start() error {
 						continue
 					}
 
-					// os.Stat doesn't seem to work very well with paths starting in "~"
-					overridePath, err := homedir.Expand(DesktopFilesOverridePath)
-					if err != nil {
-						panic(err)
-					}
-
 					// Ignore if being overridden
-					if !strings.HasPrefix(event.Name, overridePath) {
+					if !strings.HasPrefix(event.Name, DesktopFilesOverridePath) {
 						// Check if it's been overridden
-						filePathComponents := strings.Split(event.Name, "/")
+						filePathComponents := strings.Split(event.Name, string(os.PathSeparator))
 						fileName := filePathComponents[len(filePathComponents) - 1]
 
-						if _, err = os.Stat(overridePath + "/" + fileName); !os.IsNotExist(err) {
+						if _, err = os.Stat(path.Join(DesktopFilesOverridePath, fileName)); !os.IsNotExist(err) {
 							// File exists in override folder
 							continue
 						}
