@@ -2,6 +2,7 @@ package LinuxApps
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -74,7 +75,7 @@ func getExecutables(command ...string) []string {
 }
 
 // Checks if the executable already has a running instance
-func hasRunningInstance(execName string) bool {
+func hasRunningInstanceWithExactName(execName string) bool {
 	findInstanceCmd := exec.Command("ps", "-C", execName)
 
 	// Save output
@@ -88,6 +89,20 @@ func hasRunningInstance(execName string) bool {
 	}
 
 	return strings.Contains(output.String(), execName)
+}
+
+// Checks if the executable already has a running instance
+func hasRunningInstanceWithNameThatIncludes(execName string) bool {
+	runningProcessedCmd := exec.Command("bash", "-c", fmt.Sprintf("ps -A | grep %s", execName))
+
+	// Run "ps -A | grep %execName." & get output
+	res, err := runningProcessedCmd.Output()
+	if err != nil {
+		return false
+	}
+
+	output := string(res)
+	return strings.Contains(output, execName)
 }
 
 // Gets the path for an executable that has it's path in the env variables.
@@ -115,21 +130,25 @@ func giveFocusToProccessWithName(execName string) error {
 
 // It tries to give focus to the app, by trying all possible executable name variations until it succeeds.
 func resolveFocusForExecutable(exec string) error {
-	var err error
-
 	// If it's a path, get only the name
 	// Need to do this because, sometimes, an executable's proccess uses only the name (because it's in the env variables)
 	// but the '.desktop' file's command runs the whole path.
 	execName := getExecNameIfPath(exec)
 
-	if hasRunningInstance(execName) {
-		err = giveFocusToProccessWithName(execName)
+	if hasRunningInstanceWithExactName(execName) {
 
-	} else if execPath, err := getExecPath(execName); err == nil && hasRunningInstance(execPath) {
-		err = giveFocusToProccessWithName(execPath)
+		return giveFocusToProccessWithName(execName)
+	} else if execPath, err := getExecPath(execName); err == nil && hasRunningInstanceWithExactName(execPath) {
+
+		return giveFocusToProccessWithName(execPath)
+	} else if hasRunningInstanceWithNameThatIncludes(execName + ".") {
+
+		// Runs if there's a match for 'execName.*', where * can be any type of extension (eg. 'sh', 'py', etc.)
+		// The focus-giving command works without the extension.
+		return giveFocusToProccessWithName(execName)
 	}
 
-	return err
+	return nil
 }
 
 // Returns the name of an executable if it's given a path.
