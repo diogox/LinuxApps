@@ -2,6 +2,7 @@ package LinuxApps
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -148,7 +149,7 @@ func resolveFocusForExecutable(exec string) error {
 		return giveFocusToProccessWithName(execName)
 	}
 
-	return nil
+	return errors.New("no focus condition has been met")
 }
 
 // Returns the name of an executable if it's given a path.
