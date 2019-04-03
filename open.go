@@ -123,7 +123,7 @@ func getExecPath(execName string) (string, error) {
 	return output.String(), nil
 }
 
-// Gives focus to the window of a proccess with the given name.
+// Gives focus to the window of a process with the given name.
 func giveFocusToProccessWithName(execName string) error {
 	cmd := exec.Command("wmctrl", "-a", execName)
 	return cmd.Run()
